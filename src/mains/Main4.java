@@ -5,6 +5,8 @@ import java.io.IOException;
 
 import data.Pixels;
 import filter.CanyFilter;
+import filter.convolution.LoGFilter;
+import filter.convolution.ConvolutionFilter.Direction;
 
 /**
  * Cany法のテスト 
@@ -24,5 +26,9 @@ public class Main4{
         BufferedImage img = ret.convertToImage();
         
         Mains.showImage(img);
+        
+        
+        
+     
     }
 }

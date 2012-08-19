@@ -2,12 +2,12 @@ package filter.convolution;
 
 import data.Pixels;
 
-public class LoGFileter implements ConvolutionFilter{
+public class LoGFilter implements ConvolutionFilter{
     
     private Convolution
     difgau,//一階微分
     gau;//ガウスフィルタ
-    public LoGFileter(float sigma){
+    public LoGFilter(float sigma){
         gau = Convolutions.createGaussianFilter(sigma);
         difgau = Convolutions.createDifferentialGaussianFilter(sigma);
     }
@@ -36,5 +36,30 @@ public class LoGFileter implements ConvolutionFilter{
         return dst;
     }
     
+    /**
+     * x,y方向両方に二階微分
+     * @param src
+     * @param dst
+     * @return
+     */
+    public Pixels convolution(Pixels src,Pixels dst)throws IllegalArgumentException{
+        int w = src.width,h = src.height;
+        if(dst.width<w || dst.height<h){
+            throw new IllegalArgumentException("dst size error!");
+        }
+        Pixels tmp = new Pixels(w,h);
+        
+        difgau.convolution(src, tmp,Direction.X);
+        difgau.convolution(tmp, dst, Direction.Y);
+        return dst;
+    }
     
+    /**
+     * x,y方向両方に二階微分
+     * @param src
+     * @return
+     */
+    public Pixels convolution(Pixels src){
+        return convolution(src, new Pixels(src.width, src.height));
+    }
 }
