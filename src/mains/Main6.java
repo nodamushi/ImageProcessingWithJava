@@ -131,7 +131,8 @@ public class Main6{
         int xm =xmov > 127? (int)(-1L << 8 | xmov) : (int)xmov;
         int ym =ymov > 127? (int)(-1L << 8 | ymov) : (int)ymov;
         double theta = 2*PI*ro/32;
-        double zoom = zo/16d+1;
+        double zoom = 1;//拡大縮小を考えないとき
+//        double zoom = zo/16d+1;
         transformPolygon(xm+mapWidth/2, ym+mapHeight/2, zoom, theta, ret);
         return ret;
     }
@@ -184,7 +185,7 @@ public class Main6{
     //遺伝子の長さ
     //回転は32方向の5bit,移動は-128px～127pxの8bit、拡大は1/16倍単位で2倍までの5bitで表現する。
     //順に0bit側から、x方向移動(8bit)、y方向移動(8bit)、回転(5bit)、拡大(5bit)の計26bitを用いて遺伝子を表現する
-    static final int bitLength = 8+8+5+5;
+    static final int bitLength = 8+8+5;
 //            +5;
     static final Random rand = new Random(System.currentTimeMillis());
     
@@ -278,7 +279,7 @@ public class Main6{
 //        BufferedImage simg = d.toImage();
         
         int[][] pol = copy(polygon1);
-        transformPolygon(0.66, 6*2*PI/32, pol);//そのままじゃつまらないので変換する
+        transformPolygon(1, 6*2*PI/32, pol);//そのままじゃつまらないので変換する
         
         SortObject[] genes = initData(d, pol, 100);
         
@@ -310,6 +311,7 @@ public class Main6{
         g.dispose();
         
         Mains.showImage(simg);
+//        Mains.saveImage(simg,"F:\\Dropbox\\gazoukaisekiron\\reports\\no7\\nozoom.png");
         
     }
     

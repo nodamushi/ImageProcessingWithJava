@@ -1,10 +1,10 @@
 package filter;
 
+import static filter.convolution.Convolutions.*;
+import static java.lang.Math.*;
 import data.Pixels;
 import filter.convolution.Convolution;
 import filter.convolution.ConvolutionFilter.Direction;
-import static filter.convolution.Convolutions.*;
-import static java.lang.Math.*;
 
 public class CanyFilter{
     
@@ -72,55 +72,71 @@ public class CanyFilter{
             Lxy = lxy.getPixel(x,y),
             Lx2 = Lx*Lx, Ly2 = Ly*Ly,
             ma = Lx2+Ly2,//変化量の大きさを表す
-            Lvv = (Lx2*Lxx+2*Lx*Ly*Lxy+Ly2*Lyy)/(Lxx*Lxx+Lyy*Lyy);
+            Lvv = (Lx2*Lxx+2*Lx*Ly*Lxy+Ly2*Lyy);
+
             
             lvv.setPixel(x, y, Lvv);
             mag.setPixel(x, y, ma);
             
             //勾配方向を計算（45度刻みで離散化)
-            //方向の番号の振り方↓
-            //321
-            //4_0
-            //567
-            
-            if(abs(Lx)<0.00001f){
-                if(Ly>0)
-                    dir[x+y*w]=2;
-                else
-                    dir[x+y*w]=6;
-            }else{
-                float tan = Ly/Lx;
-                float atan = (float)(atan(tan)/PI/2);//-0.25～0.25
-                if(Lx < 0){
-                    atan = 0.5f-atan;//0.25～0.75
-                }
-                if(atan < 0)atan = 1+atan;//0.75～1
-                atan += 1f/8f;
-                if(atan >= 1f)atan-=1f;
-                
-                int d = (int)(atan*8);
-                dir[x+y*w]=d;
-            }
+            dir[x+y*w] = getOrient(Lx, Ly);
         }
-        //画素の周辺のピクセルに対する処理を
-        //ループで一発で記述するためによく使う手段
-        final int[] dirx = {1,1,0,-1,-1,-1,0,1},diry = {0,1,1,1,0,-1,-1,-1};
+        
         for(int x=0;x<w;x++)for(int y=0;y<h;y++){
             float set = 0;
             float ma = mag.getPixel(x, y);
             //ある程度以上の変化量の時のみ処理する。
-            if(ma > mlevel){
+            if(ma > mlevel*mlevel){
                 //勾配方向に0交差判定
                 int i= dir[x+y*w];
+                
                 float 
-                f = lvv.getPixel(x+dirx[i], y+diry[i]),
+                f = lvv.getPixel(x-dirx[i], y-diry[i]),
                 f2=lvv.getPixel(x, y);
                 if(f*f2<0) set=1;//0交差判定
             }
             dst.setPixel(x, y, set);
         }
-        
+      
         return dst;
     }
 
+    //下のgetOrientで得られる領域の方向を表す
+    private static final int[] 
+            dirx = {1,1,0,-1,-1,-1,0,1},
+            diry = {0,1,1,1,0,-1,-1,-1};
+    
+    /**
+     * 座標(x,y)が以下のような領域のどの領域に入るのかを返します。<br>
+     * 
+     * ↑y　<br>
+     * 　→x<br>
+     * <table border ="1">
+     * <tr><td>3</td><td>2</td><td>1</td></tr>
+     * <tr><td>4</td><td>●</td><td>0</td></tr>
+     * <tr><td>5</td><td>6</td><td>7</td></tr>
+     * </table>
+     * ●：原点
+     * @param x 座標
+     * @param y 座標
+     * @return 0～7
+     */
+    public static int getOrient(double x,double y){
+        if(abs(x) < 0.00001){//0除算と発散回避
+            if(y > 0)return 2;
+            return 6;
+        }else{
+            double tan = y/x;
+            double atan = (atan(tan)/PI/2);//-0.25～0.25
+            if(x < 0){
+                atan = 0.5f+atan;//0.25～0.75
+            }
+            if(atan < 0)atan = 1+atan;//0.75～1
+            atan += 0.25f/4f;//修正
+            if(atan >= 1f)atan-=1f;
+            
+            return (int)(atan*8);
+        }
+    }
+    
 }

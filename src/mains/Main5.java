@@ -71,6 +71,8 @@ public class Main5{
         //画像を表示
         Mains.showImage(img);
         
+//        Mains.saveImage(img, "F:\\Dropbox\\gazoukaisekiron\\reports\\no6\\ret.png");
+        
     }
     
     
